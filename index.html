@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laly Cosmetics - Tienda Online</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Playfair Display + Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#E5235E',   // Fucsia / Magenta del logo
+              hover: '#C2184B',     // Fucsia oscuro
+              accent: '#FCE4EC',    // Rosa pastel claro
+              nude: '#F7EBEB',      // Fondo nude cálido
+              dark: '#1F1F1F'
+            }
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-white font-sans text-gray-800 antialiased">
+
+  <!-- TOP BAR -->
+  <div class="bg-brand-primary text-white text-xs py-2 text-center font-medium tracking-wide">
+    ✨ Envíos a toda Venezuela | Tienda Virtual en Maracaibo 📍 | ¡Haz tu pedido directo a WhatsApp!
+  </div>
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-rose-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- LOGO -->
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-brand-primary flex items-center justify-center text-white font-serif font-bold text-xl shadow-md border-2 border-white">
+          laly.
+        </div>
+        <div>
+          <span class="block font-serif font-bold text-xl text-gray-900 tracking-tight leading-none">LALY</span>
+          <span class="block text-[9px] tracking-[0.25em] text-brand-primary font-semibold uppercase">Cosmetics</span>
+        </div>
+      </a>
+
+      <!-- NAV MENU -->
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
+        <a href="#inicio" class="hover:text-brand-primary transition">Inicio</a>
+        <a href="#destacados" class="hover:text-brand-primary transition">Destacados</a>
+        <a href="#promos" class="hover:text-brand-primary transition">Ofertas</a>
+        <a href="#categorias" class="hover:text-brand-primary transition">Categorías</a>
+      </nav>
+
+      <!-- ICONS & CART -->
+      <div class="flex items-center space-x-5">
+        <button class="p-2 text-gray-600 hover:text-brand-primary transition">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </button>
+        <button class="relative p-2 text-gray-600 hover:text-brand-primary transition">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span class="absolute top-1 right-1 w-4 h-4 bg-brand-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">2</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION (Modelo de Banner Principal) -->
+  <section id="inicio" class="bg-brand-nude py-12 md:py-20 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 items-center gap-12">
+      
+      <!-- HERO TEXT -->
+      <div class="space-y-6 text-center md:text-left z-10">
+        <span class="text-brand-primary text-sm font-semibold tracking-widest uppercase bg-rose-100 px-3 py-1 rounded-full">
+          Novedades & Skincare
+        </span>
+        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-gray-900 leading-tight">
+          Resalta tu belleza <br/><span class="italic font-normal text-brand-primary">como nunca antes</span>
+        </h1>
+        <p class="text-gray-600 text-sm sm:text-base max-w-md mx-auto md:mx-0">
+          Encuentra los mejores cosméticos, sérums y productos de cuidado facial importados directamente en Maracaibo.
+        </p>
+        <div class="pt-2">
+          <a href="#destacados" class="inline-block bg-brand-primary text-white px-8 py-3.5 rounded-full font-medium hover:bg-brand-hover shadow-lg shadow-rose-300/50 transition duration-300">
+            Explorar Catálogo
+          </a>
+        </div>
+      </div>
+
+      <!-- HERO IMAGE PLACEHOLDER (Estilo Bodegón de la plantilla) -->
+      <div class="relative flex justify-center">
+        <div class="w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-rose-200/50 absolute -bottom-4 blur-2xl -z-0"></div>
+        <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80" alt="Laly Cosmetics Products" class="relative z-10 rounded-2xl shadow-2xl object-cover h-[380px] w-[320px] sm:w-[380px]">
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FEATURED PRODUCTS (Productos Destacados) -->
+  <section id="destacados" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900">Productos Destacados</h2>
+      <div class="w-16 h-1 bg-brand-primary mx-auto mt-3 rounded-full"></div>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+      
+      <!-- CARD 1 -->
+      <div class="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-xl transition duration-300 flex flex-col justify-between">
+        <div class="relative aspect-square rounded-lg bg-gray-50 overflow-hidden mb-3">
+          <span class="absolute top-2 left-2 bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">Top</span>
+          <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80" alt="CeraVe Serum" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 uppercase font-semibold">CeraVe</span>
+          <h3 class="font-medium text-sm text-gray-800 line-clamp-1">Retinol Serum Renovador</h3>
+          <p class="text-brand-primary font-bold text-base mt-1">$18.00</p>
+        </div>
+        <button class="mt-3 w-full bg-brand-accent text-brand-primary font-medium text-xs py-2 rounded-lg hover:bg-brand-primary hover:text-white transition">
+          + Agregar
+        </button>
+      </div>
+
+      <!-- CARD 2 -->
+      <div class="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-xl transition duration-300 flex flex-col justify-between">
+        <div class="relative aspect-square rounded-lg bg-gray-50 overflow-hidden mb-3">
+          <img src="https://images.unsplash.com/photo-1608248597262-838d6878b31a?auto=format&fit=crop&w=400&q=80" alt="The Ordinary" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 uppercase font-semibold">The Ordinary</span>
+          <h3 class="font-medium text-sm text-gray-800 line-clamp-1">Niacinamide 10% + Zinc</h3>
+          <p class="text-brand-primary font-bold text-base mt-1">$14.00</p>
+        </div>
+        <button class="mt-3 w-full bg-brand-accent text-brand-primary font-medium text-xs py-2 rounded-lg hover:bg-brand-primary hover:text-white transition">
+          + Agregar
+        </button>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-xl transition duration-300 flex flex-col justify-between">
+        <div class="relative aspect-square rounded-lg bg-gray-50 overflow-hidden mb-3">
+          <span class="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">Nuevo</span>
+          <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80" alt="Paleta Sombras" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 uppercase font-semibold">Maquillaje</span>
+          <h3 class="font-medium text-sm text-gray-800 line-clamp-1">Paleta de Sombras Nude</h3>
+          <p class="text-brand-primary font-bold text-base mt-1">$12.00</p>
+        </div>
+        <button class="mt-3 w-full bg-brand-accent text-brand-primary font-medium text-xs py-2 rounded-lg hover:bg-brand-primary hover:text-white transition">
+          + Agregar
+        </button>
+      </div>
+
+      <!-- CARD 4 -->
+      <div class="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-xl transition duration-300 flex flex-col justify-between">
+        <div class="relative aspect-square rounded-lg bg-gray-50 overflow-hidden mb-3">
+          <img src="https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=400&q=80" alt="Dr Rashel" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 uppercase font-semibold">Dr. Rashel</span>
+          <h3 class="font-medium text-sm text-gray-800 line-clamp-1">Sérum Vitamina C</h3>
+          <p class="text-brand-primary font-bold text-base mt-1">$10.00</p>
+        </div>
+        <button class="mt-3 w-full bg-brand-accent text-brand-primary font-medium text-xs py-2 rounded-lg hover:bg-brand-primary hover:text-white transition">
+          + Agregar
+        </button>
+      </div>
+
+      <!-- CARD 5 -->
+      <div class="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-xl transition duration-300 flex flex-col justify-between">
+        <div class="relative aspect-square rounded-lg bg-gray-50 overflow-hidden mb-3">
+          <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80" alt="Lip Gloss" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400 uppercase font-semibold">Labios</span>
+          <h3 class="font-medium text-sm text-gray-800 line-clamp-1">Gloss Voluminizador</h3>
+          <p class="text-brand-primary font-bold text-base mt-1">$6.00</p>
+        </div>
+        <button class="mt-3 w-full bg-brand-accent text-brand-primary font-medium text-xs py-2 rounded-lg hover:bg-brand-primary hover:text-white transition">
+          + Agregar
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MID BANNER (Sección Promocional / Spring Sale en la maqueta) -->
+  <section id="promos" class="bg-gradient-to-r from-rose-100 via-pink-50 to-brand-nude py-12 my-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 items-center gap-8">
+      <div class="space-y-4">
+        <span class="text-xs font-bold uppercase tracking-widest text-brand-primary bg-white px-3 py-1 rounded-full shadow-sm">
+          Especial de la Semana
+        </span>
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-gray-900">
+          Combos de Skincare <br/><span class="text-brand-primary">Hasta 20% OFF</span>
+        </h2>
+        <p class="text-gray-600 text-sm">
+          Lleva tu rutina completa de limpieza y humectación facial con precio especial. Armamos el kit perfecto según tu tipo de piel.
+        </p>
+        <a href="https://wa.me/584246766457?text=Hola%20Laly%20Cosmetics,%20quisiera%20información%20sobre%20los%20combos%20de%20skincare" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-700 transition shadow-md">
+          <i data-lucide="message-circle" class="w-4 h-4"></i> Consultar Combo por WhatsApp
+        </a>
+      </div>
+      <div class="flex justify-center">
+        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80" alt="Kit Promocional" class="rounded-2xl shadow-xl max-h-72 object-cover">
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORIES GRID (Sección inferior del modelo) -->
+  <section id="categorias" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-3 gap-6">
+      
+      <!-- CAT 1 -->
+      <div class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-md">
+        <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Cuidado Facial">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+          <h3 class="font-serif text-xl font-bold">Cuidado Facial</h3>
+          <p class="text-xs text-gray-200 mt-1">Limpiadores, sérums y cremas</p>
+        </div>
+      </div>
+
+      <!-- CAT 2 -->
+      <div class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-md">
+        <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Maquillaje">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+          <h3 class="font-serif text-xl font-bold">Maquillaje & Color</h3>
+          <p class="text-xs text-gray-200 mt-1">Bases, sombras y labiales</p>
+        </div>
+      </div>
+
+      <!-- CAT 3 -->
+      <div class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-md">
+        <img src="https://images.unsplash.com/photo-1608248597262-838d6878b31a?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Cuidado Corporal">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+          <h3 class="font-serif text-xl font-bold">Accesorios & Más</h3>
+          <p class="text-xs text-gray-200 mt-1">Brochas, rizadores y aplicadores</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-white border-t border-gray-800 pt-12 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
+      <div>
+        <h4 class="font-serif text-xl font-bold text-brand-primary mb-3">Laly Cosmetics</h4>
+        <p class="text-xs text-gray-400 leading-relaxed max-w-sm">
+          Venta de Cosméticos y algo más. Tienda Virtual con entregas en Maracaibo y envíos a toda Venezuela.
+        </p>
+      </div>
+      <div>
+        <h5 class="text-sm font-semibold uppercase tracking-wider mb-3">Contacto</h5>
+        <p class="text-xs text-gray-400">📍 Maracaibo - Venezuela</p>
+        <p class="text-xs text-gray-400 mt-1">📱 0424-6766457</p>
+        <p class="text-xs text-gray-400 mt-1">📸 @lalycosmetic.3</p>
+      </div>
+      <div>
+        <h5 class="text-sm font-semibold uppercase tracking-wider mb-3">Formas de Pago</h5>
+        <p class="text-xs text-gray-400">Pago Móvil • Zelle • Efectivo USD</p>
+        <p class="text-xs text-gray-400 mt-2">Atención personalizada y confirmación inmediata por WhatsApp.</p>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 pt-6 text-center text-[11px] text-gray-500">
+      &copy; 2026 Laly Cosmetics. Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <!-- ACTIVAR ICONOS LUCIDE -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

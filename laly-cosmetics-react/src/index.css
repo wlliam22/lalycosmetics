@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colores Brand */
+  --color-brand-primary: #E5235E;
+  --color-brand-hover: #C2184B;
+  --color-brand-accent: #FCE4EC;
+  --color-brand-nude: #F7EBEB;
+  --color-brand-dark: #1F1F1F;
+
+  /* Fuentes */
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Poppins", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-800 font-sans antialiased;
+  }
+}
+
+/* Scrollbar oculta para carrusel */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Placeholder para productos sin imagen */
+.product-placeholder {
+  background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeaeaACWupRFDkFlDxw1T5BzPZKJ7PiHfQimiqjvu4LA&s=10');
+  background-size: cover;
+  background-position: center;
+}
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-in-out;
+}

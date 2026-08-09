@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laly Cosmetics - Tienda Online 3D</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Playfair Display + Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Three.js + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- GSAP & ScrollTrigger (Control de Animación 3D por Scroll) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#E5235E',   // Fucsia / Magenta
+              hover: '#C2184B',     // Fucsia oscuro
+              accent: '#FCE4EC',    // Rosa pastel claro
+              nude: '#F7EBEB',      // Fondo nude cálido
+              dark: '#1F1F1F'
+            }
+          },
+          fontFamily: {
+            serif: ['Playfair Display', 'serif'],
+            sans: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <!-- HTML2PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Scripts Locales -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script src="js/pdf.js" defer></script>
+
+  <style>
+    /* LIENZO 3D FIJO EN PANTALLA COMPLETA */
+    #webgl-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+      pointer-events: none; /* Permite hacer click a través del canvas */
+    }
+
+    #bg-3d-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Ocultar barras de desplazamiento manteniendo funcionalidad */
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-brand-nude/30 font-sans text-gray-800 antialiased relative selection:bg-brand-primary selection:text-white">
+
+  <!-- LIENZO 3D FONDO DE PARTÍCULAS -->
+  <canvas id="bg-3d-particles"></canvas>
+
+  <!-- LIENZO 3D PRINCIPAL (INTERACTIVO Y FIJO) -->
+  <div id="webgl-container"></div>
+
+  <!-- CONTENIDO WEB (CAPA Z-20) -->
+  <div class="relative z-20">
+
+    <!-- TOP BAR -->
+    <div class="bg-brand-primary/90 backdrop-blur-md text-white text-xs py-2 text-center font-medium tracking-wide shadow-sm">
+      ✨ Envíos a toda Venezuela | Tienda Virtual en Maracaibo 📍 | ¡Haz tu pedido directo a WhatsApp!
+    </div>
+
+    <!-- HEADER / NAVBAR -->
+    <header class="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-rose-100 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        <!-- LOGO -->
+        <a href="#" class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-brand-primary flex items-center justify-center text-white font-serif font-bold text-xl shadow-md border-2 border-white">
+            laly.
+          </div>
+          <div>
+            <span class="block font-serif font-bold text-xl text-gray-900 tracking-tight leading-none">LALY</span>
+            <span class="block text-[9px] tracking-[0.25em] text-brand-primary font-semibold uppercase">Cosmetics 3D</span>
+          </div>
+        </a>
+
+        <!-- NAV MENU -->
+        <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
+          <a href="#inicio" class="hover:text-brand-primary transition">Inicio</a>
+          <a href="#destacados" class="hover:text-brand-primary transition">Destacados</a>
+          <a href="#promos" class="hover:text-brand-primary transition">Ofertas</a>
+          <a href="#catalogo" class="hover:text-brand-primary transition">Catálogo</a>
+          <a href="#categorias" class="hover:text-brand-primary transition">Categorías</a>
+        </nav>
+
+        <!-- ICONS & CART -->
+        <div class="flex items-center space-x-5">
+          <button class="p-2 text-gray-600 hover:text-brand-primary transition">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+          <button class="relative p-2 text-gray-600 hover:text-brand-primary transition" onclick="toggleCartModal()">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-brand-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="inicio" class="min-h-screen flex items-center py-12 relative">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 items-center gap-12 w-full">
+        
+        <!-- HERO TEXT -->
+        <div class="space-y-6 text-center md:text-left">
+          <span class="inline-block text-brand-primary text-sm font-semibold tracking-widest uppercase bg-rose-100/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-rose-200 shadow-sm">
+            Experiencia 3D & Skincare
+          </span>
+          <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-gray-900 leading-tight">
+            Resalta tu belleza <br/><span class="italic font-normal text-brand-primary">como nunca antes</span>
+          </h1>
+          <p class="text-gray-600 text-sm sm:text-base max-w-md mx-auto md:mx-0">
+            Encuentra los mejores cosméticos, sérums y productos de cuidado facial importados directamente en Maracaibo.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-4 justify-center md:justify-start">
+            <a href="#catalogo" class="inline-block bg-brand-primary text-white px-8 py-3.5 rounded-full font-medium hover:bg-brand-hover shadow-lg shadow-rose-300/50 transition duration-300">
+              Explorar Catálogo
+            </a>
+          </div>
+
+          <div class="pt-4 flex items-center justify-center md:justify-start gap-2 text-xs text-gray-500">
+            <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-brand-primary animate-bounce"></i>
+            <span>Haz scroll hacia abajo para ver la interacción 3D</span>
+          </div>
+        </div>
+
+        <!-- ESPACIO RESERVADO PARA EL OBJETO 3D EN HERO -->
+        <div class="h-96 w-full hidden md:block"></div>
+
+      </div>
+    </section>
+
+    <!-- FEATURED PRODUCTS -->
+    <section id="destacados" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-12 gap-8 items-center">
+        
+        <div class="md:col-span-7 bg-white/60 backdrop-blur-md p-8 rounded-3xl border border-white/60 shadow-xl">
+          <div class="mb-6">
+            <span class="text-brand-primary text-xs font-bold uppercase tracking-wider">Selección Exclusiva</span>
+            <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 mt-1">Productos Destacados</h2>
+            <div class="w-16 h-1 bg-brand-primary mt-3 rounded-full"></div>
+          </div>
+
+          <!-- CAROUSEL CONTENEDOR DINÁMICO -->
+          <div id="featured-products" class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div class="text-center py-6 text-gray-400 text-sm w-full">Cargando destacados...</div>
+          </div>
+        </div>
+
+        <!-- ESPACIO LIBRE PARA MODELO 3D EN LA DERECHA -->
+        <div class="md:col-span-5 hidden md:block"></div>
+      </div>
+    </section>
+
+    <!-- MID BANNER / OFERTAS -->
+    <section id="promos" class="py-28 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-r from-rose-100/80 via-pink-50/80 to-brand-nude/80 backdrop-blur-md p-8 md:p-12 rounded-3xl border border-white/80 shadow-2xl grid md:grid-cols-2 items-center gap-8">
+        
+        <!-- ESPACIO IZQUIERDO PARA MODELO 3D EN EL ZOOM -->
+        <div class="hidden md:block"></div>
+
+        <div class="space-y-4">
+          <span class="text-xs font-bold uppercase tracking-widest text-brand-primary bg-white/90 px-3 py-1 rounded-full shadow-sm">
+            Especial de la Semana
+          </span>
+          <h2 class="font-serif text-3xl sm:text-4xl font-bold text-gray-900">
+            Combos de Skincare <br/><span class="text-brand-primary">Hasta 20% OFF</span>
+          </h2>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Lleva tu rutina completa de limpieza y humectación facial con precio especial. Armamos el kit perfecto según tu tipo de piel.
+          </p>
+          <a href="https://wa.me/584246766457?text=Hola%20Laly%20Cosmetics,%20quisiera%20información%20sobre%20los%20combos%20de%20skincare" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-700 transition shadow-md">
+            <i data-lucide="message-circle" class="w-4 h-4"></i> Consultar Combo por WhatsApp
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CATALOG PRODUCTS -->
+    <section id="catalogo" class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white/70 backdrop-blur-lg rounded-3xl my-6 border border-rose-100 shadow-xl">
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 class="font-serif text-3xl font-bold text-gray-900">Catálogo Completo</h2>
+          <p class="text-xs text-gray-500 mt-1">Explora nuestros productos disponibles en stock</p>
+        </div>
+
+        <!-- FILTROS POR CATEGORÍA -->
+        <div class="flex flex-wrap gap-2 text-xs">
+          <button onclick="filterByCategory('Todos')" class="px-4 py-2 rounded-full bg-brand-primary text-white font-medium hover:opacity-90 transition shadow-sm">Todos</button>
+          <button onclick="filterByCategory('Cuidado Facial')" class="px-4 py-2 rounded-full bg-white text-gray-600 font-medium hover:bg-rose-50 border border-gray-200 transition">Cuidado Facial</button>
+          <button onclick="filterByCategory('Maquillaje')" class="px-4 py-2 rounded-full bg-white text-gray-600 font-medium hover:bg-rose-50 border border-gray-200 transition">Maquillaje</button>
+          <button onclick="filterByCategory('Cuidado Corporal')" class="px-4 py-2 rounded-full bg-white text-gray-600 font-medium hover:bg-rose-50 border border-gray-200 transition">Cuidado Corporal</button>
+          <button onclick="filterByCategory('Accesorios')" class="px-4 py-2 rounded-full bg-white text-gray-600 font-medium hover:bg-rose-50 border border-gray-200 transition">Accesorios</button>
+        </div>
+      </div>
+
+      <!-- PRODUCT GRID DINÁMICO -->
+      <div id="catalog-products" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div class="col-span-full text-center py-12 text-gray-400 text-sm">Cargando catálogo...</div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES GRID -->
+    <section id="categorias" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-3 gap-6">
+        
+        <div onclick="filterByCategory('Cuidado Facial')" class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-lg border border-white/60">
+          <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Cuidado Facial">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+            <h3 class="font-serif text-xl font-bold">Cuidado Facial</h3>
+            <p class="text-xs text-gray-200 mt-1">Limpiadores, sérums y cremas</p>
+          </div>
+        </div>
+
+        <div onclick="filterByCategory('Maquillaje')" class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-lg border border-white/60">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Maquillaje">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+            <h3 class="font-serif text-xl font-bold">Maquillaje & Color</h3>
+            <p class="text-xs text-gray-200 mt-1">Bases, sombras y labiales</p>
+          </div>
+        </div>
+
+        <div onclick="filterByCategory('Accesorios')" class="relative h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-lg border border-white/60">
+          <img src="https://images.unsplash.com/photo-1608248597262-838d6878b31a?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" alt="Cuidado Corporal">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+            <h3 class="font-serif text-xl font-bold">Accesorios & Más</h3>
+            <p class="text-xs text-gray-200 mt-1">Brochas, rizadores y aplicadores</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900/95 backdrop-blur-md text-white border-t border-gray-800 pt-12 pb-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
+        <div>
+          <h4 class="font-serif text-xl font-bold text-brand-primary mb-3">Laly Cosmetics</h4>
+          <p class="text-xs text-gray-400 leading-relaxed max-w-sm">
+            Venta de Cosméticos y algo más. Tienda Virtual con entregas en Maracaibo y envíos a toda Venezuela.
+          </p>
+        </div>
+        <div>
+          <h5 class="text-sm font-semibold uppercase tracking-wider mb-3">Contacto</h5>
+          <p class="text-xs text-gray-400">📍 Maracaibo - Venezuela</p>
+          <p class="text-xs text-gray-400 mt-1">📱 0424-6766457</p>
+          <p class="text-xs text-gray-400 mt-1">📸 @lalycosmetic.3</p>
+        </div>
+        <div>
+          <h5 class="text-sm font-semibold uppercase tracking-wider mb-3">Formas de Pago</h5>
+          <p class="text-xs text-gray-400">Pago Móvil • Zelle • Efectivo USD</p>
+          <p class="text-xs text-gray-400 mt-2">Atención personalizada y confirmación inmediata por WhatsApp.</p>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 pt-6 text-center text-[11px] text-gray-500">
+        &copy; 2026 Laly Cosmetics. Todos los derechos reservados.
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MODAL / DRAWER DE CARRITO -->
+  <div id="cart-modal" onclick="toggleCartModal()" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300 bg-black/40 backdrop-blur-[2px] flex justify-end">
+    <div id="cart-drawer" onclick="event.stopPropagation()" class="w-full max-w-md bg-white h-full shadow-2xl flex flex-col justify-between p-6 transform translate-x-full transition-transform duration-300 ease-in-out">
+      <div>
+        <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-brand-primary"></i>
+            <h3 class="font-serif font-bold text-lg text-gray-900">Tu Carrito de Compras</h3>
+          </div>
+          <button onclick="toggleCartModal()" class="p-1 text-gray-400 hover:text-gray-600 rounded-lg">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div id="cart-items-container" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+      </div>
+
+      <div class="border-t border-gray-100 pt-4 space-y-3">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-gray-500 font-medium">Total Estimado:</span>
+          <span id="cart-total" class="text-xl font-bold text-brand-primary">$0.00</span>
+        </div>
+        <button onclick="openCheckoutModal()" class="w-full bg-brand-primary text-white py-3.5 rounded-2xl font-semibold hover:bg-brand-hover shadow-lg shadow-rose-200 transition flex items-center justify-center gap-2">
+          <span>Procesar Pedido</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- SCRIPT DE CONTROL 3D Y SCROLL (GSAP + THREE.JS) -->
+  <script>
+    lucide.createIcons();
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ==========================================
+    // 1. MOTOR 3D PRINCIPAL CON SCROLLTRIGGER
+    // ==========================================
+    function initMain3D() {
+      const container = document.getElementById('webgl-container');
+      if (!container) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 5);
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      // LUCES DE ESTUDIO
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+      scene.add(ambientLight);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+      mainLight.position.set(5, 8, 5);
+      mainLight.castShadow = true;
+      scene.add(mainLight);
+
+      const pinkLight = new THREE.PointLight(0xE5235E, 2, 10);
+      pinkLight.position.set(-4, 2, 2);
+      scene.add(pinkLight);
+
+      // CONSTRUCCIÓN DEL MODELO 3D (GRUPO DE COSMÉTICO)
+      const cosmeticGroup = new THREE.Group();
+
+      // Frasco de Vidrio
+      const jarGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.8, 32);
+      const jarMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transmission: 0.7,
+        opacity: 1,
+        transparent: true,
+        roughness: 0.1,
+        ior: 1.5,
+        reflectivity: 0.9
+      });
+      const jarMesh = new THREE.Mesh(jarGeometry, jarMaterial);
+      jarMesh.castShadow = true;
+      cosmeticGroup.add(jarMesh);
+
+      // Suero Rosa Interior
+      const liquidGeometry = new THREE.CylinderGeometry(0.72, 0.72, 1.4, 32);
+      const liquidMaterial = new THREE.MeshStandardMaterial({
+        color: 0xE5235E,
+        roughness: 0.2,
+        metalness: 0.1
+      });
+      const liquidMesh = new THREE.Mesh(liquidGeometry, liquidMaterial);
+      liquidMesh.position.y = -0.15;
+      cosmeticGroup.add(liquidMesh);
+
+      // Tapa Dorada Metalizada
+      const capGeometry = new THREE.CylinderGeometry(0.5, 0.8, 0.6, 32);
+      const capMaterial = new THREE.MeshStandardMaterial({
+        color: 0xf5d061,
+        metalness: 0.9,
+        roughness: 0.15
+      });
+      const capMesh = new THREE.Mesh(capGeometry, capMaterial);
+      capMesh.position.y = 1.2;
+      capMesh.castShadow = true;
+      cosmeticGroup.add(capMesh);
+
+      // Gotero
+      const dropperGeometry = new THREE.SphereGeometry(0.35, 32, 16);
+      const dropperMaterial = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+      const dropperMesh = new THREE.Mesh(dropperGeometry, dropperMaterial);
+      dropperMesh.position.y = 1.6;
+      cosmeticGroup.add(dropperMesh);
+
+      // Estado inicial en la sección HERO
+      cosmeticGroup.position.set(1.5, -0.2, 0);
+      cosmeticGroup.rotation.set(0.1, -0.5, 0);
+      scene.add(cosmeticGroup);
+
+      // ANIMACIÓN CONTINUA DE ROTACIÓN BASE
+      function animate() {
+        requestAnimationFrame(animate);
+        cosmeticGroup.rotation.y += 0.003; // Rotación sutil permanente
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // ==========================================
+      // ANIMACIONES VINCULADAS AL SCROLL (GSAP)
+      // ==========================================
+      
+      // 1. Transición de HERO -> DESTACADOS
+      gsap.to(cosmeticGroup.position, {
+        x: 2.2,
+        y: 0.1,
+        z: -0.5,
+        scrollTrigger: {
+          trigger: "#destacados",
+          start: "top bottom",
+          end: "top center",
+          scrub: 1
+        }
+      });
+
+      gsap.to(cosmeticGroup.rotation, {
+        x: 0.4,
+        z: -0.2,
+        scrollTrigger: {
+          trigger: "#destacados",
+          start: "top bottom",
+          end: "top center",
+          scrub: 1
+        }
+      });
+
+      // 2. Transición de DESTACADOS -> PROMOS (Zoom in centrado en la izquierda)
+      gsap.to(cosmeticGroup.position, {
+        x: -1.8,
+        y: 0,
+        z: 1.5,
+        scrollTrigger: {
+          trigger: "#promos",
+          start: "top bottom",
+          end: "center center",
+          scrub: 1.2
+        }
+      });
+
+      gsap.to(cosmeticGroup.rotation, {
+        x: 0.8,
+        y: Math.PI * 1.5,
+        scrollTrigger: {
+          trigger: "#promos",
+          start: "top bottom",
+          end: "center center",
+          scrub: 1.2
+        }
+      });
+
+      // 3. Transición de PROMOS -> CATÁLOGO (Posición discreta)
+      gsap.to(cosmeticGroup.position, {
+        x: 2.8,
+        y: -0.5,
+        z: -1,
+        scrollTrigger: {
+          trigger: "#catalogo",
+          start: "top bottom",
+          end: "top center",
+          scrub: 1
+        }
+      });
+
+      // Redimensionamiento
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    // ==========================================
+    // 2. FONDO 3D DE PARTÍCULAS
+    // ==========================================
+    function init3DBackground() {
+      const canvas = document.getElementById('bg-3d-particles');
+      if (!canvas) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const particleCount = 70;
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 14;
+        positions[i + 1] = (Math.random() - 0.5) * 14;
+        positions[i + 2] = (Math.random() - 0.5) * 10;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+      const material = new THREE.PointsMaterial({
+        color: 0xE5235E,
+        size: 0.09,
+        transparent: true,
+        opacity: 0.35
+      });
+
+      const particleSystem = new THREE.Points(geometry, material);
+      scene.add(particleSystem);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        particleSystem.rotation.y += 0.0008;
+        particleSystem.rotation.x += 0.0004;
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initMain3D();
+      init3DBackground();
+    });
+  </script>
+</body>
+</html>

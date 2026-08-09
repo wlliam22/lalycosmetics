@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "firebase": "^12.17.0",
+    "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.28.0",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.18.2"
+  }
+}

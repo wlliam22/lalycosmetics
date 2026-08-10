@@ -13,11 +13,13 @@ import {
   Printer, 
   Search, 
   FileText, 
-  Calendar, 
   User, 
   Loader2, 
   CheckCircle2 
 } from 'lucide-react'
+import { signOut } from 'firebase/auth'
+import { auth } from '../firebase/config'
+import { LogOut } from 'lucide-react'
 
 const QuotesAdmin = () => {
   const [quotes, setQuotes] = useState([])
@@ -25,7 +27,7 @@ const QuotesAdmin = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [processingId, setProcessingId] = useState(null)
 
-  // 1. Escuchar cotizaciones en tiempo real
+  // Escuchar cotizaciones en tiempo real
   useEffect(() => {
     const q = query(collection(db, 'quotes'), orderBy('createdAt', 'desc'))
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -40,7 +42,7 @@ const QuotesAdmin = () => {
     return () => unsubscribe()
   }, [])
 
-  // 2. Confirmar Venta + Descuento de Stock en Transacción Atómica
+  // Confirmar Venta + Descuento de Stock
   const handleConfirmSale = async (quote) => {
     if (quote.status === 'completada') return
     
@@ -52,13 +54,12 @@ const QuotesAdmin = () => {
 
     try {
       await runTransaction(db, async (transaction) => {
-        // Verificar y descontar el stock de cada ítem de la cotización
         for (const item of quote.items) {
           const productRef = doc(db, 'products', item.id)
           const productSnap = await transaction.get(productRef)
 
           if (!productSnap.exists()) {
-            throw new Error(`El producto "${item.nombre || item.title}" ya no existe en el inventario.`)
+            throw new Error(`El producto "${item.nombre || item.title}" no existe en la base de datos.`)
           }
 
           const currentStock = productSnap.data().stock || 0
@@ -71,8 +72,7 @@ const QuotesAdmin = () => {
           })
         }
 
-        // Marcar la cotización como completada
-        const quoteRef = doc(db, 'quotes', quote.id)
+        const quoteRef = doc(doc(db, 'quotes', quote.id))
         transaction.update(quoteRef, {
           status: 'completada',
           confirmedAt: new Date()
@@ -88,35 +88,113 @@ const QuotesAdmin = () => {
     }
   }
 
-  // 3. Reimprimir / Descargar Cotización
+  // Reimprimir / Descargar Cotización PDF en formato Carta Vertical
   const handlePrint = (quote) => {
     const printWindow = window.open('', '_blank')
     const itemsHtml = quote.items.map((item) => `
       <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.nombre || item.title}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.cantidad}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">$${Number(item.precio).toFixed(2)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">$${(item.cantidad * item.precio).toFixed(2)}</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid #e2e8f0;">${item.nombre || item.title}</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">${item.cantidad}</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">$${Number(item.precio).toFixed(2)}</td>
+        <td style="padding: 10px 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">$${(item.cantidad * item.precio).toFixed(2)}</td>
       </tr>
     `).join('')
 
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>Cotización #${quote.id.slice(0, 6)}</title>
+          <title>Cotizacion_${quote.id.slice(0, 6)}</title>
           <style>
-            body { font-family: sans-serif; padding: 20px; color: #333; }
-            h1 { color: #e11d48; margin-bottom: 5px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { background: #f8fafc; padding: 10px; text-align: left; font-size: 12px; }
-            .total { text-align: right; margin-top: 20px; font-size: 16px; font-weight: bold; }
+            @page {
+              size: letter portrait;
+              margin: 12mm;
+            }
+            @media print {
+              html, body {
+                width: 8.5in;
+                height: 11in;
+                margin: 0;
+                padding: 0;
+              }
+            }
+            body { 
+              font-family: Arial, Helvetica, sans-serif; 
+              color: #1e293b; 
+              padding: 20px;
+              margin: 0;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 2px solid #e11d48;
+              padding-bottom: 15px;
+              margin-bottom: 20px;
+            }
+            .brand { color: #e11d48; font-size: 22px; font-weight: bold; margin: 0; }
+            .subtext { font-size: 11px; color: #64748b; margin-top: 3px; }
+            .info-grid {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              font-size: 12px;
+              background-color: #fff1f2;
+              padding: 12px;
+              border-radius: 8px;
+            }
+            .info-grid p { margin: 2px 0; }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-top: 15px; 
+              font-size: 12px;
+            }
+            th { 
+              background: #f8fafc; 
+              color: #0f172a;
+              padding: 10px 8px; 
+              text-align: left; 
+              font-weight: bold;
+              border-bottom: 2px solid #cbd5e1;
+            }
+            .total-box { 
+              margin-top: 25px; 
+              text-align: right; 
+              font-size: 13px; 
+            }
+            .total-amount {
+              font-size: 20px;
+              color: #e11d48;
+              font-weight: bold;
+              margin-top: 4px;
+            }
           </style>
         </head>
         <body>
-          <h1>Cotización de Compra</h1>
-          <p><strong>N° Cotización:</strong> #${quote.id.slice(0, 6)}</p>
-          <p><strong>Cliente:</strong> ${quote.clienteNombre || 'Cliente General'}</p>
-          <p><strong>Fecha:</strong> ${quote.createdAt?.toDate ? quote.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+          <div class="header">
+            <div>
+              <p class="brand">LALY COSMETICS</p>
+              <p class="subtext">Maracaibo, Venezuela</p>
+              <p class="subtext">Contacto: +58 424-6766457</p>
+            </div>
+            <div style="text-align: right;">
+              <p style="font-size: 16px; font-weight: bold; margin: 0; color: #0f172a;">COTIZACIÓN</p>
+              <p class="subtext">N°: #${quote.id.slice(0, 6)}</p>
+              <p class="subtext">Fecha: ${quote.createdAt?.toDate ? quote.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div>
+              <p><strong>Cliente:</strong> ${quote.clienteNombre || 'Cliente General'}</p>
+              <p><strong>Ubicación:</strong> ${quote.clienteUbicacion || 'N/A'}</p>
+            </div>
+            <div style="text-align: right;">
+              <p><strong>Teléfono:</strong> ${quote.clienteTelefono || 'N/A'}</p>
+              <p><strong>Estado:</strong> ${quote.status === 'completada' ? 'Venta Confirmada' : 'Pendiente'}</p>
+            </div>
+          </div>
+
           <table>
             <thead>
               <tr>
@@ -128,7 +206,11 @@ const QuotesAdmin = () => {
             </thead>
             <tbody>${itemsHtml}</tbody>
           </table>
-          <p class="total">Total: $${Number(quote.total || 0).toFixed(2)}</p>
+
+          <div class="total-box">
+            <p style="margin: 0; color: #64748b;">TOTAL ESTIMADO:</p>
+            <p class="total-amount">$${Number(quote.total || 0).toFixed(2)} USD</p>
+          </div>
         </body>
       </html>
     `)
@@ -143,23 +225,11 @@ const QuotesAdmin = () => {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-rose-100 shadow-sm">
-          <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
-              Gestión de Cotizaciones
-            </h1>
-            <p className="text-xs text-gray-500 mt-1">
-              Revisa, reimprime y confirma ventas para descontar automáticamente del inventario
-            </p>
-          </div>
-        </div>
-
-        {/* BÚSQUEDA */}
-        <div className="flex bg-white p-4 rounded-2xl border border-rose-50 shadow-sm">
+        {/* BUSCADOR */}
+        <div className="flex bg-white p-4 rounded-2xl border border-rose-100 shadow-sm">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -209,7 +279,7 @@ const QuotesAdmin = () => {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1.5 text-gray-800 font-medium">
                             <User className="w-3.5 h-3.5 text-gray-400" />
-                            <span>{q.clienteNombre || 'Cliente Mozo / General'}</span>
+                            <span>{q.clienteNombre || 'Cliente General'}</span>
                           </div>
                         </td>
                         <td className="py-3 px-4 text-gray-600">
@@ -238,8 +308,6 @@ const QuotesAdmin = () => {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            
-                            {/* Botón 1: Confirmar Venta / Descontar Inventario */}
                             <button
                               onClick={() => handleConfirmSale(q)}
                               disabled={isCompleted || processingId === q.id}
@@ -257,15 +325,20 @@ const QuotesAdmin = () => {
                               )}
                             </button>
 
-                            {/* Botón 2: Reimprimir / Descargar Cotización */}
                             <button
                               onClick={() => handlePrint(q)}
-                              title="Reimprimir o Descargar Cotización"
+                              title="Imprimir / Descargar Cotización"
                               className="p-2 bg-gray-100 hover:bg-rose-50 text-gray-600 hover:text-brand-primary rounded-xl transition"
                             >
                               <Printer className="w-4 h-4" />
                             </button>
-
+                            <button
+                              onClick={() => signOut(auth)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold transition"
+>
+                            <LogOut className="w-4 h-4" />
+                              Cerrar Sesión
+                            </button>
                           </div>
                         </td>
                       </tr>

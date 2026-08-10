@@ -3,39 +3,31 @@ import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import Hero from '../components/home/Hero'
 import FeaturedProducts from '../components/home/FeaturedProducts'
-import Catalog from '../components/home/Catalog'
 import PromoBanner from '../components/home/PromoBanner'
 import CategoriesGrid from '../components/home/CategoriesGrid'
 import CartDrawer from '../components/cart/CartDrawer'
 import CheckoutModal from '../components/checkout/CheckoutModal'
 import AnimatedSection from '../components/common/AnimatedSection'
 import SectionHeader from '../components/common/SectionHeader'
-import { useCatalogFilters } from '../hooks/useCatalogFilters'
+import { useNavigate } from 'react-router-dom'
 
 const Home = () => {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
+  const navigate = useNavigate()
 
-  const {
-    selectedCategory,
-    setSelectedCategory,
-    searchTerm,
-    setSearchTerm,
-    catalogRef,
-    handleCategoryClick
-  } = useCatalogFilters()
+  const handleCategoryClick = (category) => {
+    navigate(`/catalogo?category=${encodeURIComponent(category)}`)
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-gray-800 selection:bg-brand-primary selection:text-white overflow-x-hidden">
-      <Header onCartOpen={() => setIsCartOpen(true)} onSearch={setSearchTerm} />
+    <div className="min-h-screen flex flex-col bg-white text-gray-800 overflow-x-hidden">
+      <Header onCartOpen={() => setIsCartOpen(true)} />
 
       <main className="flex-1">
         <Hero />
 
-        <AnimatedSection
-          id="destacados"
-          className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
-        >
+        <AnimatedSection id="destacados" className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader eyebrow="Selección Especial" title="Productos Destacados" />
           <FeaturedProducts />
         </AnimatedSection>
@@ -49,19 +41,6 @@ const Home = () => {
             <SectionHeader eyebrow="Colecciones" title="Explora por Categoría" />
             <CategoriesGrid onCategoryClick={handleCategoryClick} />
           </div>
-        </AnimatedSection>
-
-        <AnimatedSection
-          amount={0.1}
-          className="py-16 md:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-20"
-          id="catalogo"
-          ref={catalogRef}
-        >
-          <Catalog
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            searchTerm={searchTerm}
-          />
         </AnimatedSection>
       </main>
 

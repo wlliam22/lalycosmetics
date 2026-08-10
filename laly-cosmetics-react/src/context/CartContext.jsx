@@ -7,22 +7,15 @@ const CartContext = createContext()
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      console.log('🔍 ADD_TO_CART - payload recibido:', action.payload)
       const product = normalizeProductData(action.payload)
-      console.log('📦 Producto normalizado:', product)
-      
-      if (!product) {
-        console.error(' normalizeProductData devolvió null')
-        return state
-      }
+      if (!product) return state
 
       const existingIndex = state.findIndex(item => String(item.id) === String(product.id))
-      console.log('🔎 Índice existente:', existingIndex)
 
       if (existingIndex > -1) {
         const currentQty = state[existingIndex].quantity
         if (product.stock && (currentQty + 1) > product.stock) {
-          toast.error(` Solo hay ${product.stock} unidades disponibles.`)
+          toast.error(`Solo hay ${product.stock} unidades disponibles.`)
           return state
         }
         const updated = [...state]
@@ -33,14 +26,14 @@ const cartReducer = (state, action) => {
           nombre: product.nombre,
           imagenUrl: product.imagenUrl,
         }
-        toast.success(` ${product.nombre} agregado al carrito`)
+        toast.success(`${product.nombre} agregado al carrito`)
         return updated
       } else {
         if (product.stock && product.stock < 1) {
-          toast.error(' Producto agotado.')
+          toast.error('Producto agotado.')
           return state
         }
-        toast.success(` ${product.nombre} agregado al carrito`)
+        toast.success(`${product.nombre} agregado al carrito`)
         return [
           ...state,
           {
@@ -61,13 +54,13 @@ const cartReducer = (state, action) => {
       if (!item) return state
 
       if (delta > 0 && item.stock && (item.quantity + delta) > item.stock) {
-        toast.error(` Solo hay ${item.stock} unidades disponibles.`)
+        toast.error(`Solo hay ${item.stock} unidades disponibles.`)
         return state
       }
 
       const newQty = item.quantity + delta
       if (newQty <= 0) {
-        toast.success(` ${item.nombre} eliminado del carrito`)
+        toast.success(`${item.nombre} eliminado del carrito`)
         return state.filter(i => String(i.id) !== String(id))
       }
 
@@ -84,7 +77,10 @@ const cartReducer = (state, action) => {
     }
 
     case 'CLEAR_CART':
-      toast.success(' Carrito vaciado')
+      toast.success('Carrito vaciado')
+      return []
+
+    case 'CLEAR_CART_SILENT':
       return []
 
     default:
@@ -103,7 +99,6 @@ export const CartProvider = ({ children }) => {
   }, [cart])
 
   const addToCart = (product) => {
-    console.log('🛒 addToCart llamado con:', product)
     dispatch({ type: 'ADD_TO_CART', payload: product })
   }
 
@@ -115,8 +110,12 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { id } })
   }
 
-  const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART' })
+  const clearCart = (silent = false) => {
+    if (silent) {
+      dispatch({ type: 'CLEAR_CART_SILENT' })
+    } else {
+      dispatch({ type: 'CLEAR_CART' })
+    }
   }
 
   const getTotal = () => {

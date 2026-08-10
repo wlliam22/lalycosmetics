@@ -1,40 +1,18 @@
-import { useState } from "react";
-import { X, ShoppingBag, ArrowRight, Minus, Plus, Trash2, Send } from "lucide-react";
+import { X, ShoppingBag, ArrowRight, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { generateOrderCode, generateOrderPDF, checkoutToWhatsApp } from "../../utils/checkout";
 
 const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
   const { cart, updateQuantity, removeFromCart, getTotal, getItemCount, clearCart } = useCart();
-
-  const [customerData, setCustomerData] = useState({
-    nombre: "",
-    metodoPago: "Pago Móvil",
-    direccion: "",
-  });
 
   if (!isOpen) return null;
 
   const totalItems = getItemCount();
   const total = getTotal();
 
-  const handleInputChange = (e) => {
-    setCustomerData({
-      ...customerData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleProcessOrder = () => {
+  const handleOpenCheckout = () => {
     if (cart.length === 0) return;
-    const orderCode = generateOrderCode();
-
-    // 1. Descarga la cotización en PDF
-    generateOrderPDF({ cart, total, orderCode, customerData });
-
-    // 2. Abre WhatsApp Business con la plantilla codificada
-    checkoutToWhatsApp({ cart, total, orderCode, customerData });
-
-    if (onCheckout) onCheckout();
+    onClose(); // Cierra el lateral del carrito
+    if (onCheckout) onCheckout(); // Abre el modal de Checkout único
   };
 
   return (
@@ -67,7 +45,7 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
           </div>
 
           {/* CONTENEDOR DE ITEMS */}
-          <div className="space-y-3 max-h-[48vh] overflow-y-auto pr-1 scrollbar-hide">
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center mb-4">
@@ -85,7 +63,7 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
                 const itemPrice =
                   typeof item.precio === "string"
                     ? parseFloat(item.precio.replace(/[^0-9.-]+/g, "")) || 0
-                    : item.precio || 0;
+                    : item.price_usd ?? item.precio ?? 0;
                 const qty = parseInt(item.quantity) || 1;
                 const itemTotal = itemPrice * qty;
 
@@ -95,14 +73,14 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
                     className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-rose-50 shadow-sm hover:shadow-md transition-shadow duration-200"
                   >
                     <img
-                      src={item.imagenUrl || "https://via.placeholder.com/100"}
-                      alt={item.nombre}
+                      src={item.imagenUrl || item.image || "https://via.placeholder.com/100"}
+                      alt={item.nombre || item.title}
                       className="w-16 h-16 object-cover rounded-xl border border-rose-100 flex-shrink-0"
                     />
 
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-gray-800 truncate">
-                        {item.nombre}
+                        {item.nombre || item.title}
                       </h4>
                       <p className="text-xs text-brand-primary font-medium">
                         ${itemPrice.toFixed(2)} c/u
@@ -145,42 +123,9 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
           </div>
         </div>
 
-        {/* FOOTER Y FORMULARIO DE CHECKOUT */}
+        {/* FOOTER Y ACCIÓN */}
         {cart.length > 0 && (
           <div className="border-t border-rose-100/70 pt-4 space-y-3">
-            {/* CAMPOS DE ENTREGA */}
-            <div className="space-y-2 text-xs">
-              <input
-                type="text"
-                name="nombre"
-                placeholder="Nombre completo *"
-                value={customerData.nombre}
-                onChange={handleInputChange}
-                className="w-full p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700 placeholder-gray-400"
-              />
-              <div className="flex gap-2">
-                <select
-                  name="metodoPago"
-                  value={customerData.metodoPago}
-                  onChange={handleInputChange}
-                  className="w-1/2 p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700"
-                >
-                  <option value="Pago Móvil">Pago Móvil</option>
-                  <option value="Zelle">Zelle</option>
-                  <option value="Efectivo">Efectivo</option>
-                </select>
-                <input
-                  type="text"
-                  name="direccion"
-                  placeholder="Zona / Maracaibo *"
-                  value={customerData.direccion}
-                  onChange={handleInputChange}
-                  className="w-1/2 p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700 placeholder-gray-400"
-                />
-              </div>
-            </div>
-
-            {/* TOTAL ESTIMADO */}
             <div className="flex justify-between items-center pt-1">
               <span className="text-sm text-gray-500 font-medium">
                 Total Estimado
@@ -190,14 +135,13 @@ const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
               </span>
             </div>
 
-            {/* BOTONES DE ACCIÓN */}
             <div className="space-y-2">
               <button
-                onClick={handleProcessOrder}
+                onClick={handleOpenCheckout}
                 className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-3.5 rounded-2xl font-semibold hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200/50 transition-all duration-300 flex items-center justify-center gap-2 group"
               >
-                <Send className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
-                <span>Generar PDF y Pedir por WS</span>
+                <span>Procesar Pedido</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </button>
 
               <button

@@ -1,4 +1,6 @@
 import jsPDF from 'jspdf'
+import { db } from '../firebase/config' // Ajusta la ruta a tu archivo firebaseConfig
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 // Formateador correlativo: COT-YYYYMMDD-HHMM
 export const generateOrderCode = () => {
@@ -8,13 +10,33 @@ export const generateOrderCode = () => {
   return `COT-${dateStr}-${timeStr}`
 }
 
-// 1. Generación del comprobante PDF
+// 1. Guardar la Cotización en Firestore
+export const saveQuoteToFirestore = async ({ orderCode, customerData, cart, total }) => {
+  try {
+    const docRef = await addDoc(collection(db, 'quotes'), {
+      code: orderCode,
+      customerName: customerData.nombre,
+      paymentMethod: customerData.metodoPago,
+      address: customerData.direccion,
+      items: cart,
+      total: total,
+      status: 'pendiente',
+      createdAt: serverTimestamp(),
+    })
+    return docRef.id
+  } catch (error) {
+    console.error('Error al guardar la cotización en Firestore:', error)
+    throw error
+  }
+}
+
+// 2. Generación del comprobante PDF
 export const generateOrderPDF = ({ cart, total, orderCode, customerData }) => {
   const doc = new jsPDF()
 
   // Membrete Laly Cosmetics
   doc.setFontSize(18)
-  doc.setTextColor(229, 35, 94) // #E5235E
+  doc.setTextColor(229, 35, 94)
   doc.text('LALY COSMETICS', 14, 20)
 
   doc.setFontSize(10)
@@ -75,16 +97,14 @@ export const generateOrderPDF = ({ cart, total, orderCode, customerData }) => {
   doc.setFontSize(12)
   doc.text(`TOTAL ESTIMADO: $${total.toFixed(2)} USD`, 125, currentY + 12)
 
-  // Descarga del archivo en la PC/Móvil del cliente
   doc.save(`Cotizacion_LalyCosmetics_${orderCode}.pdf`)
 
-  // Retornamos el Base64 por si luego lo envías por EmailJS u otro servicio
   return {
     base64: doc.output('datauristring')
   }
 }
 
-// 2. Redirección y formato de WhatsApp Business
+// 3. Redirección limpia a WhatsApp
 export const checkoutToWhatsApp = ({ cart, total, orderCode, customerData }) => {
   const phone = '584246766457'
 
@@ -114,11 +134,10 @@ ${itemsText}
 • *Método de Pago:* ${customerData.metodoPago || 'Por acordar'}
 • *Ubicación / Dirección:* ${customerData.direccion || 'No especificada'}
 
-Quedo a la espera de sus datos bancarios para confirmar el pago. ¡Muchas gracias!`
+Quedo a la espera de sus datos bancarios para realizar el pago. ¡Muchas gracias!`
 
-  // URL a la API de WhatsApp para forzar la vista Web/App sin errores de sistema en Windows
   const encodedUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`
   
-  // Redirección limpia
-  window.location.href = encodedUrl
+  // Usamos window.open para evitar cortar la ejecución de React en la ventana actual
+  window.open(encodedUrl, '_blank')
 }

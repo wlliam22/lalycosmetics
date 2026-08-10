@@ -3,7 +3,6 @@ import InstagramIcon from '../../assets/icons/Instagram'
 import { Link } from 'react-router-dom'
 
 const Footer = () => {
-  
   return (
     <footer className="bg-gray-900 text-white border-t border-gray-800 pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center md:text-left">
@@ -35,12 +34,15 @@ const Footer = () => {
           </p>
         </div>
       </div>
-      <div className="border-t border-gray-800 pt-6 text-center text-[11px] text-gray-500">
-        &copy; 2026 Laly Cosmetics. Todos los derechos reservados.
-      </div>
-      <div className="mt-8 pt-4 border-t border-rose-100 flex justify-between items-center text-[11px] text-gray-400">
-        <p>© {new Date().getFullYear()} Lalys Cosmetics. Todos los derechos reservados.</p>
-        <Link to="/admin" className="hover:text-brand-primary transition font-medium">
+
+      {/* SECCIÓN INFERIOR CON SEPARACIÓN CORRECTA Y MEJOR CONTRASTE */}
+      <div className="border-t border-gray-800 pt-6 text-center text-[11px] text-gray-400 flex flex-col sm:flex-row items-center justify-center gap-2">
+        <span>&copy; 2026 Laly Cosmetics. Todos los derechos reservados.</span>
+        <span className="hidden sm:inline text-gray-700">•</span>
+        <Link 
+          to="/admin" 
+          className="text-gray-400 hover:text-brand-primary transition font-medium underline underline-offset-2"
+        >
           Acceso Admin
         </Link>
       </div>

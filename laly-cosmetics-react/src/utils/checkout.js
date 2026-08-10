@@ -54,10 +54,16 @@ export const generateOrderPDF = ({ cart, total, orderCode, customerData }) => {
 
   let currentY = startY + 8
   cart.forEach((item) => {
-    const subtotal = (item.precio * item.quantity).toFixed(2)
+    const price =
+      typeof item.precio === 'string'
+        ? parseFloat(item.precio.replace(/[^0-9.-]+/g, '')) || 0
+        : item.precio || 0
+    const qty = parseInt(item.quantity) || 1
+    const subtotal = (price * qty).toFixed(2)
+
     doc.text(item.nombre.substring(0, 45), 14, currentY)
-    doc.text(String(item.quantity), 125, currentY)
-    doc.text(Number(item.precio).toFixed(2), 148, currentY)
+    doc.text(String(qty), 125, currentY)
+    doc.text(Number(price).toFixed(2), 148, currentY)
     doc.text(subtotal, 178, currentY)
     currentY += 7
   })
@@ -69,8 +75,13 @@ export const generateOrderPDF = ({ cart, total, orderCode, customerData }) => {
   doc.setFontSize(12)
   doc.text(`TOTAL ESTIMADO: $${total.toFixed(2)} USD`, 125, currentY + 12)
 
-  // Descarga del archivo
+  // Descarga del archivo en la PC/Móvil del cliente
   doc.save(`Cotizacion_LalyCosmetics_${orderCode}.pdf`)
+
+  // Retornamos el Base64 por si luego lo envías por EmailJS u otro servicio
+  return {
+    base64: doc.output('datauristring')
+  }
 }
 
 // 2. Redirección y formato de WhatsApp Business
@@ -78,25 +89,36 @@ export const checkoutToWhatsApp = ({ cart, total, orderCode, customerData }) => 
   const phone = '584246766457'
 
   const itemsText = cart
-    .map(i => `• ${i.quantity}x ${i.nombre} ($${(i.precio * i.quantity).toFixed(2)})`)
+    .map(i => {
+      const price =
+        typeof i.precio === 'string'
+          ? parseFloat(i.precio.replace(/[^0-9.-]+/g, '')) || 0
+          : i.precio || 0
+      const qty = parseInt(i.quantity) || 1
+      return `• ${qty}x ${i.nombre} ($${(price * qty).toFixed(2)})`
+    })
     .join('\n')
 
-  const message = `*¡HOLA LALY COSMETICS! QUIERO PROCESAR MI PEDIDO*
-*N° de Cotización:* ${orderCode}
-*Fecha:* ${new Date().toLocaleDateString()}
+  const message = `🌸 *¡HOLA LALY COSMETICS! QUIERO PROCESAR MI PEDIDO* 🌸
 
-*DETALLE DEL PEDIDO:*
+*N° de Cotización:* ${orderCode}
+*Fecha:* ${new Date().toLocaleDateString('es-ES')}
+
+🛒 *DETALLE DEL PEDIDO:*
 ${itemsText}
 
-*TOTAL ESTIMADO:* $${total.toFixed(2)} USD
+💰 *TOTAL ESTIMADO:* $${total.toFixed(2)} USD
 
-*DATOS PARA LA ENTREGA / ENVÍO:*
-*Nombre:* ${customerData.nombre || '[Nombre del Cliente]'}
-*Método de Pago:* ${customerData.metodoPago || '[Pago Móvil / Zelle / Efectivo]'}
-*Ubicación / Dirección:* ${customerData.direccion || '[Zona / Maracaibo]'}
+📌 *DATOS PARA LA ENTREGA / ENVÍO:*
+• *Nombre:* ${customerData.nombre || 'No especificado'}
+• *Método de Pago:* ${customerData.metodoPago || 'Por acordar'}
+• *Ubicación / Dirección:* ${customerData.direccion || 'No especificada'}
 
 Quedo a la espera de sus datos bancarios para confirmar el pago. ¡Muchas gracias!`
 
-  const encodedUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-  window.open(encodedUrl, '_blank')
+  // URL a la API de WhatsApp para forzar la vista Web/App sin errores de sistema en Windows
+  const encodedUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`
+  
+  // Redirección limpia
+  window.location.href = encodedUrl
 }

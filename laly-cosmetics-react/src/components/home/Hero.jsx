@@ -44,14 +44,14 @@ const Hero = () => {
                 https://i.ibb.co/gLMfHPSj/Whats-App-Image-2026-08-09-at-8-33-39-PM.jpg 640w,
                 https://i.ibb.co/gLMfHPSj/Whats-App-Image-2026-08-09-at-8-33-39-PM.jpg 800w
               "
-              sizes="(max-width: 640px) 320px, 380px"
+              sizes="(max-width: 640px) 320px, 520px"
               alt="Sérums y productos de cuidado facial Laly Cosmetics dispuestos sobre una superficie clara"
               width={380}
-              height={380}
+              height={520}
               fetchpriority="high"
               loading="eager"
               decoding="async"
-              className="relative z-10 rounded-2xl shadow-2xl object-cover h-[380px] w-[320px] sm:w-[380px]"
+              className="relative z-10 rounded-2xl shadow-2xl object-cover h-[520px] w-[320px] sm:w-[380px]"
             />
           </div>
 

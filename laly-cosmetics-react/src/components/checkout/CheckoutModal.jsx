@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { X, ShoppingBag, Send, Calendar, Hash, FileText } from "lucide-react";
 import { useCart } from "../../context/CartContext";
-import { generateOrderPDF } from "../../utils/checkout";
+import { generateOrderPDF, checkoutToWhatsApp } from "../../utils/checkout";
+import { sendOrderEmailToStore } from "../../utils/emailService";
 
 const CheckoutModal = ({ isOpen, onClose }) => {
   const { cart, getTotal, clearCart } = useCart();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [customerData, setCustomerData] = useState({
     nombre: "",
@@ -31,44 +33,46 @@ const CheckoutModal = ({ isOpen, onClose }) => {
     });
   };
 
-  const buildWhatsAppMessage = () => {
-    let message = `🌸 *¡HOLA LALY COSMETICS! QUIERO PROCESAR MI PEDIDO* 🌸\n\n`;
-    message += `_______________________________________\n`;
-    message += `*N° de Cotización:* ${cotizacion}\n`;
-    message += `*Fecha:* ${fecha}\n\n`;
-    message += `🛒 *DETALLE DEL PEDIDO:*\n`;
+  /* const handleProcessOrder = async () => {
+    setIsProcessing(true);
 
-    cart.forEach((item) => {
-      const price =
-        typeof item.precio === "string"
-          ? parseFloat(item.precio.replace(/[^0-9.-]+/g, "")) || 0
-          : item.precio || 0;
-      const qty = parseInt(item.quantity) || 1;
-      const subtotal = price * qty;
-      message += `• ${qty}x ${item.nombre} ($${price.toFixed(2)} c/u) = $${subtotal.toFixed(2)}\n`;
-    });
+    try {
+      // 1. Genera y descarga el PDF localmente
+      const pdfData = await generateOrderPDF({
+        cart,
+        total,
+        orderCode: cotizacion,
+        customerData,
+      });
 
-    message += `\n_______________________________________\n`;
-    message += `💰 *TOTAL ESTIMADO:* $${total.toFixed(2)} USD\n\n`;
-    message += `📌 *DATOS PARA LA ENTREGA / ENVÍO:*\n`;
-    message += `• *Nombre:* ${customerData.nombre || "No especificado"}\n`;
-    message += `• *Método de Pago:* ${customerData.metodoPago}\n`;
-    message += `• *Ubicación / Dirección:* ${customerData.direccion || "No especificada"}\n\n`;
-    message += `Adjunto mi cotización descargada en PDF. Quedo a la espera de sus datos bancarios para confirmar el pago. ¡Muchas gracias!`;
+      // 2. Envía respaldo por correo a la tienda (si usas EmailJS)
+      if (sendOrderEmailToStore) {
+        await sendOrderEmailToStore({
+          customerData,
+          cotizacion,
+          fecha,
+          total,
+          cart,
+          pdfBase64: pdfData?.base64 || null,
+        });
+      }*/
 
-    return encodeURIComponent(message);
-  };
+      // 3. Limpia el estado del carrito
+      if (clearCart) clearCart();
+      onClose();
 
-  const handleProcessOrder = () => {
-    // 1. Genera y descarga automáticamente la cotización PDF
-    generateOrderPDF({ cart, total, orderCode: cotizacion, customerData });
-
-    // 2. Redirige a WhatsApp con los datos completados
-    const url = `https://wa.me/584246766457?text=${buildWhatsAppMessage()}`;
-    window.open(url, "_blank");
-
-    if (clearCart) clearCart();
-    onClose();
+      // 4. Redirige a WhatsApp usando la helper centralizada
+      checkoutToWhatsApp({
+        cart,
+        total,
+        orderCode: cotizacion,
+        customerData,
+      });
+    } catch (error) {
+      console.error("Error al procesar el pedido:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -213,16 +217,25 @@ const CheckoutModal = ({ isOpen, onClose }) => {
           <div className="space-y-2">
             <button
               onClick={handleProcessOrder}
-              disabled={!customerData.nombre || !customerData.direccion}
+              disabled={
+                !customerData.nombre ||
+                !customerData.direccion ||
+                isProcessing
+              }
               className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3.5 rounded-2xl font-semibold hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-200/50 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FileText className="w-4 h-4" />
               <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              <span>Descargar PDF y Enviar a WhatsApp</span>
+              <span>
+                {isProcessing
+                  ? "Procesando..."
+                  : "Descargar PDF y Enviar a WhatsApp"}
+              </span>
             </button>
 
             <button
               onClick={onClose}
+              disabled={isProcessing}
               className="w-full text-xs text-gray-400 hover:text-gray-600 text-center py-1 transition-colors"
             >
               Seguir comprando

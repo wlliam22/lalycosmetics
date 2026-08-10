@@ -60,7 +60,6 @@ const Header = ({ onCartOpen, onSearch, showSearch = true }) => {
             <a href="#inicio" className="hover:text-brand-primary transition">Inicio</a>
             <a href="#destacados" className="hover:text-brand-primary transition">Destacados</a>
             <a href="#catalogo" className="hover:text-brand-primary transition">Catálogo</a>
-            <a href="#promos" className="hover:text-brand-primary transition">Ofertas</a>
             <a href="#categorias" className="hover:text-brand-primary transition">Categorías</a>
           </nav>
 

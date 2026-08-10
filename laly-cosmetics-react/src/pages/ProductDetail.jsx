@@ -19,23 +19,34 @@ const ProductDetail = () => {
 
   const product = products.find((p) => p.id === id)
 
+  // Extraer valores normalizados
+  const title = product?.title || product?.nombre || ''
+  const category = product?.category || product?.categoria || 'Sin categoría'
+  const description = product?.description || product?.descripcion || ''
+  const price = product?.price_usd ?? product?.precio ?? 0
+  const images = product?.images?.length ? product.images : [product?.imagenUrl || 'https://via.placeholder.com/400']
+
   const relatedProducts = useMemo(
     () =>
       products
-        .filter((p) => p.category === product?.category && p.id !== id)
+        .filter((p) => {
+          const pCat = p.category || p.categoria
+          return pCat?.toLowerCase() === category.toLowerCase() && p.id !== id
+        })
         .slice(0, 4),
-    [products, product?.category, id]
+    [products, category, id]
   )
 
   useEffect(() => {
     setQuantity(1)
     setAdded(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [id])
 
   if (loading) {
     return (
       <PageShell className="bg-brand-nude/30">
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center py-20">
           <div className="text-gray-400 text-sm animate-pulse">Cargando producto...</div>
         </div>
       </PageShell>
@@ -45,7 +56,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <PageShell className="bg-brand-nude/30">
-        <div className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="flex-1 flex flex-col items-center justify-center p-4 py-20">
           <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md text-center">
             <h2 className="text-2xl font-serif text-gray-700 mb-2">Producto no encontrado</h2>
             <p className="text-gray-400 text-sm mb-6">
@@ -53,7 +64,7 @@ const ProductDetail = () => {
             </p>
             <Link
               to="/"
-              className="bg-brand-primary text-white px-6 py-2.5 rounded-full text-sm hover:bg-brand-hover transition inline-block"
+              className="bg-brand-primary text-white px-6 py-2.5 rounded-full text-sm hover:bg-brand-hover transition inline-block font-semibold shadow-md shadow-rose-200/50"
             >
               Volver al inicio
             </Link>
@@ -84,15 +95,15 @@ const ProductDetail = () => {
           <div className="grid md:grid-cols-2 gap-8 md:gap-12">
 
             <ProductGallery
-              images={product.images}
-              title={product.title}
+              images={images}
+              title={title}
               outOfStock={isOutOfStock}
             />
 
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-xs font-bold text-brand-primary uppercase tracking-wider bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
-                  {product.category || 'Sin categoría'}
+                  {category}
                 </span>
                 {!isOutOfStock ? (
                   <span className="text-xs text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 font-medium flex items-center gap-1">
@@ -107,12 +118,12 @@ const ProductDetail = () => {
               </div>
 
               <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
-                {product.title}
+                {title}
               </h1>
 
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl md:text-4xl font-bold text-brand-primary">
-                  {formatUSD(product.price_usd)}
+                  {formatUSD(price)}
                 </span>
                 <span className="text-sm text-gray-400 font-medium">USD</span>
               </div>
@@ -123,7 +134,7 @@ const ProductDetail = () => {
                   Descripción
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                  {product.description || 'Sin descripción disponible.'}
+                  {description || 'Sin descripción disponible.'}
                 </p>
               </div>
 

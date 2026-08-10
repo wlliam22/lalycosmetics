@@ -9,7 +9,9 @@ export const ProductsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('created_at', 'desc'))
+    // Corregido: createdAt en lugar de created_at
+    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'))
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = []
       snapshot.forEach((doc) => {

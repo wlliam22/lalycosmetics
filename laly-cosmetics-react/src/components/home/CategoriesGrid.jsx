@@ -7,12 +7,12 @@ const CategoriesGrid = ({ onCategoryClick }) => {
     },
     {
       name: 'Maquillaje',
-      img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
+      img: "https://i.ibb.co/4ZjRwskQ/Maquillaje.jpg",
       description: 'Bases, sombras y labiales'
     },
     {
       name: 'Accesorios',
-      img: 'https://images.unsplash.com/photo-1608248597262-838d6878b31a?auto=format&fit=crop&w=600&q=80',
+      img: "https://i.ibb.co/bhCsLqH/Accesorio.jpg",
       description: 'Brochas, rizadores y aplicadores'
     }
   ]

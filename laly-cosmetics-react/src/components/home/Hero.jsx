@@ -39,10 +39,10 @@ const Hero = () => {
               className="w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-rose-200/50 absolute -bottom-4 blur-2xl -z-0"
             />
             <img
-              src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80"
+              src="https://i.ibb.co/gLMfHPSj/Whats-App-Image-2026-08-09-at-8-33-39-PM.jpg"
               srcSet="
-                https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=640&q=80 640w,
-                https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80 800w
+                https://i.ibb.co/gLMfHPSj/Whats-App-Image-2026-08-09-at-8-33-39-PM.jpg 640w,
+                https://i.ibb.co/gLMfHPSj/Whats-App-Image-2026-08-09-at-8-33-39-PM.jpg 800w
               "
               sizes="(max-width: 640px) 320px, 380px"
               alt="Sérums y productos de cuidado facial Laly Cosmetics dispuestos sobre una superficie clara"

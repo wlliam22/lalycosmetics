@@ -4,13 +4,21 @@ import { useCart } from '../../context/CartContext'
 import ProductCard from '../product/ProductCard'
 
 const FeaturedProducts = () => {
-  const { products } = useProducts()
+  const { products, loading } = useProducts()
   const { addToCart } = useCart()
 
   const featured = useMemo(
     () => products.filter((p) => p.is_featured === true),
     [products]
   )
+
+  if (loading) {
+    return (
+      <div className="text-center py-6 text-gray-400 text-sm w-full animate-pulse">
+        Cargando productos destacados...
+      </div>
+    )
+  }
 
   if (featured.length === 0) {
     return (

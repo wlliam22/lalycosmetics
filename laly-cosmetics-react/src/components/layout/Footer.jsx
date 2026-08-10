@@ -1,5 +1,6 @@
 import { MapPin, Phone, CreditCard } from 'lucide-react'
 import InstagramIcon from '../../assets/icons/Instagram'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   
@@ -36,6 +37,12 @@ const Footer = () => {
       </div>
       <div className="border-t border-gray-800 pt-6 text-center text-[11px] text-gray-500">
         &copy; 2026 Laly Cosmetics. Todos los derechos reservados.
+      </div>
+      <div className="mt-8 pt-4 border-t border-rose-100 flex justify-between items-center text-[11px] text-gray-400">
+        <p>© {new Date().getFullYear()} Lalys Cosmetics. Todos los derechos reservados.</p>
+        <Link to="/admin" className="hover:text-brand-primary transition font-medium">
+          Acceso Admin
+        </Link>
       </div>
     </footer>
   )

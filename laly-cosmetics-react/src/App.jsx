@@ -5,6 +5,10 @@ import { ProductsProvider } from './context/ProductsContext'
 import Home from './pages/Home'
 import ProductDetail from './pages/ProductDetail'
 import Admin from './pages/Admin'
+import QuotesAdmin from './pages/QuotesAdmin' // o la ruta que uses
+
+// Dentro de tu <Routes>:
+<Route path="/admin/cotizaciones" element={<QuotesAdmin />} />
 
 function App() {
   return (

@@ -1,18 +1,47 @@
-import { X, ShoppingBag, ArrowRight, Minus, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { X, ShoppingBag, ArrowRight, Minus, Plus, Trash2, Send } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import { generateOrderCode, generateOrderPDF, checkoutToWhatsApp } from "../../utils/checkout";
 
-const CartDrawer = ({ isOpen, onClose, onCheckout  }) => {
-  const { cart, updateQuantity, removeFromCart, getTotal, getItemCount } =
-    useCart();
+const CartDrawer = ({ isOpen, onClose, onCheckout }) => {
+  const { cart, updateQuantity, removeFromCart, getTotal, getItemCount, clearCart } = useCart();
+
+  const [customerData, setCustomerData] = useState({
+    nombre: "",
+    metodoPago: "Pago Móvil",
+    direccion: "",
+  });
 
   if (!isOpen) return null;
 
   const totalItems = getItemCount();
+  const total = getTotal();
+
+  const handleInputChange = (e) => {
+    setCustomerData({
+      ...customerData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleProcessOrder = () => {
+    if (cart.length === 0) return;
+    const orderCode = generateOrderCode();
+
+    // 1. Descarga la cotización en PDF
+    generateOrderPDF({ cart, total, orderCode, customerData });
+
+    // 2. Abre WhatsApp Business con la plantilla codificada
+    checkoutToWhatsApp({ cart, total, orderCode, customerData });
+
+    if (onCheckout) onCheckout();
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end">
-      {/* PANEL DEL CARRITO - Con fondo sutil y degradado */}
+      {/* PANEL DEL CARRITO */}
       <div className="w-full max-w-md bg-white/95 backdrop-blur-md h-full shadow-2xl flex flex-col justify-between p-6 animate-slide-in-right border-l border-rose-100/50">
+        
         {/* HEADER CARRITO */}
         <div>
           <div className="flex justify-between items-center border-b border-rose-100/70 pb-4 mb-4">
@@ -38,7 +67,7 @@ const CartDrawer = ({ isOpen, onClose, onCheckout  }) => {
           </div>
 
           {/* CONTENEDOR DE ITEMS */}
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
+          <div className="space-y-3 max-h-[48vh] overflow-y-auto pr-1 scrollbar-hide">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center mb-4">
@@ -48,8 +77,7 @@ const CartDrawer = ({ isOpen, onClose, onCheckout  }) => {
                   Tu carrito está vacío
                 </p>
                 <p className="text-xs text-gray-400 mt-1 max-w-[200px]">
-                  ¡Explora nuestros productos y dale un toque de belleza a tu
-                  día!
+                  ¡Explora nuestros productos y dale un toque de belleza a tu día!
                 </p>
               </div>
             ) : (
@@ -117,27 +145,68 @@ const CartDrawer = ({ isOpen, onClose, onCheckout  }) => {
           </div>
         </div>
 
-        {/* FOOTER Y BOTÓN PROCESAR */}
+        {/* FOOTER Y FORMULARIO DE CHECKOUT */}
         {cart.length > 0 && (
           <div className="border-t border-rose-100/70 pt-4 space-y-3">
-            <div className="flex justify-between items-center">
+            {/* CAMPOS DE ENTREGA */}
+            <div className="space-y-2 text-xs">
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre completo *"
+                value={customerData.nombre}
+                onChange={handleInputChange}
+                className="w-full p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700 placeholder-gray-400"
+              />
+              <div className="flex gap-2">
+                <select
+                  name="metodoPago"
+                  value={customerData.metodoPago}
+                  onChange={handleInputChange}
+                  className="w-1/2 p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700"
+                >
+                  <option value="Pago Móvil">Pago Móvil</option>
+                  <option value="Zelle">Zelle</option>
+                  <option value="Efectivo">Efectivo</option>
+                </select>
+                <input
+                  type="text"
+                  name="direccion"
+                  placeholder="Zona / Maracaibo *"
+                  value={customerData.direccion}
+                  onChange={handleInputChange}
+                  className="w-1/2 p-2.5 bg-rose-50/50 border border-rose-100 rounded-xl focus:outline-none focus:border-brand-primary text-gray-700 placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            {/* TOTAL ESTIMADO */}
+            <div className="flex justify-between items-center pt-1">
               <span className="text-sm text-gray-500 font-medium">
                 Total Estimado
               </span>
               <span className="text-2xl font-bold text-brand-primary">
-                ${getTotal().toFixed(2)}
+                ${total.toFixed(2)}
               </span>
             </div>
 
-            <button
-              onClick={() => {
-                if (onCheckout) onCheckout();
-              }}
-              className="w-full bg-gradient-to-r from-brand-primary to-rose-400 text-white py-3.5 rounded-2xl font-semibold hover:from-brand-hover hover:to-rose-500 shadow-lg shadow-rose-200/50 transition-all duration-300 flex items-center justify-center gap-2 group"
-            >
-              <span>Procesar Pedido</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-            </button>
+            {/* BOTONES DE ACCIÓN */}
+            <div className="space-y-2">
+              <button
+                onClick={handleProcessOrder}
+                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-3.5 rounded-2xl font-semibold hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-200/50 transition-all duration-300 flex items-center justify-center gap-2 group"
+              >
+                <Send className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                <span>Generar PDF y Pedir por WS</span>
+              </button>
+
+              <button
+                onClick={clearCart}
+                className="w-full text-xs text-gray-400 hover:text-rose-500 text-center py-1 transition-colors duration-200"
+              >
+                Vaciar Carrito
+              </button>
+            </div>
           </div>
         )}
       </div>
